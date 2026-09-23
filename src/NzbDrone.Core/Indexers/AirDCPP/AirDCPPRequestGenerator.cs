@@ -4,6 +4,7 @@ using System.Linq;
 using NLog;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.IndexerSearch.Definitions;
+using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Indexers.AirDCPP
 {
@@ -43,7 +44,7 @@ namespace NzbDrone.Core.Indexers.AirDCPP
 
             foreach (var episode in episodes)
             {
-                var searchString = string.Format("{0} S{1:00}E{2:00}", series, episode.Season, episode.Episode);
+                var searchString = string.Format("{0} S{1:00}E{2:00}", series.RemoveAccent(), episode.Season, episode.Episode);
                 pageableRequests.Add(GetRequest(searchString));
             }
 
