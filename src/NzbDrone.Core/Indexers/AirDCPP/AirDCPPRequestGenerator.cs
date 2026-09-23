@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NLog;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.IndexerSearch.Definitions;
-using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Indexers.AirDCPP
 {
     public class AirDCPPRequestGenerator : IIndexerRequestGenerator
     {
+        private const string AccentedChars = "ÀÁÂÃÄÅàáâãäåÈÉÊËèéêëÌÍÎÏìíîïÒÓÔÕÖØòóôõöøÙÚÛÜùúûüÝýÿÑñÇç";
+        private const string PlainChars = "AAAAAAaaaaaaEEEEeeeeIIIIiiiiOOOOOOooooooUUUUuuuuYyyNnCc";
+
         public string BaseUrl { get; set; }
         public AirDCPPSettings Settings { get; set; }
 
@@ -44,11 +47,29 @@ namespace NzbDrone.Core.Indexers.AirDCPP
 
             foreach (var episode in episodes)
             {
-                var searchString = string.Format("{0} S{1:00}E{2:00}", series.RemoveAccent(), episode.Season, episode.Episode);
+                var searchString = string.Format("{0} S{1:00}E{2:00}", RemoveAccents(series), episode.Season, episode.Episode);
                 pageableRequests.Add(GetRequest(searchString));
             }
 
             return pageableRequests;
+        }
+
+        private static string RemoveAccents(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return input;
+            }
+
+            var builder = new StringBuilder(input.Length);
+
+            foreach (var character in input)
+            {
+                var index = AccentedChars.IndexOf(character);
+                builder.Append(index >= 0 ? PlainChars[index] : character);
+            }
+
+            return builder.ToString();
         }
 
         public virtual IndexerPageableRequestChain GetSearchRequests(SeasonSearchCriteria searchCriteria)
